@@ -23,6 +23,8 @@ import org.gradle.api.artifacts.transform.ArtifactTransform;
 import org.gradle.api.artifacts.transform.ArtifactTransformException;
 import org.gradle.api.artifacts.transform.TransformInput;
 import org.gradle.api.artifacts.transform.TransformOutput;
+import org.gradle.api.logging.Logger;
+import org.gradle.api.logging.Logging;
 import org.gradle.internal.reflect.DirectInstantiator;
 import org.gradle.internal.reflect.JavaMethod;
 import org.gradle.internal.reflect.JavaReflectionUtil;
@@ -89,6 +91,8 @@ public class ArtifactTransforms {
     }
 
     private static class DependencyTransformTransformer implements Transformer<File, File> {
+        private static final Logger LOGGER = Logging.getLogger(DependencyTransformTransformer.class);
+
         private final ArtifactTransform artifactTransform;
         private final JavaMethod<? super ArtifactTransform, File> outputProperty;
         private final String outputFormat;
