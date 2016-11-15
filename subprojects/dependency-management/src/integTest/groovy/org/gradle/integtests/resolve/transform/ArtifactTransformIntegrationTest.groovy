@@ -78,7 +78,9 @@ class ArtifactTransformIntegrationTest extends AbstractIntegrationSpec {
             project(':app') {
                 configurations {
                     filter {
-                        format = 'noArtifactOrTransformAvailable'
+                        artifactsQuery {
+                            attribute(Attribute.of(ArtifactExtension.class), new ArtifactExtension("noArtifactTransformAvailable"));
+                        }
                     }
                 }
 
@@ -120,7 +122,9 @@ class ArtifactTransformIntegrationTest extends AbstractIntegrationSpec {
             project(':app') {
                 configurations {
                     transform {
-                        format = 'classpath'
+                        artifactsQuery {
+                            attribute(Attribute.of(ProcessingFormat.class), ProcessingFormat.CLASSPATH);
+                        }
                         resolutionStrategy.registerTransform(JarTransform) {
                             outputDirectory = project.file("\${buildDir}/transformed")
                         }
@@ -131,19 +135,31 @@ class ArtifactTransformIntegrationTest extends AbstractIntegrationSpec {
                     transform project(':lib')
                 }
 
-                task resolve(type: Copy) {
+                task resolve {
                     dependsOn configurations.transform
-                    from configurations.transform.incoming.artifacts*.file
-                    into "\${buildDir}/libs"
+                    doLast {
+                        copy {
+                            from configurations.transform.incoming.artifacts*.file
+                            into "\${buildDir}/libs"
+                        }
+                    }
                 }
             }
 
-            @TransformInput(format = 'jar')
+            enum ProcessingFormat {
+                CLASSPATH,
+                RAW
+            }
+
             class JarTransform extends ArtifactTransform {
                 private File jar
 
-                @TransformOutput(format = 'classpath')
-                File getClasspathElement() {
+                JarTransform() {
+                    getInAttributes().attribute(Attribute.of(ArtifactExtension.class), new ArtifactExtension("jar"));
+                    addOutAttributes().attribute(Attribute.of(ProcessingFormat.class), ProcessingFormat.CLASSPATH);
+                }
+
+                File getResult(AttributeContainer out) {
                     jar
                 }
 
@@ -179,7 +195,9 @@ class ArtifactTransformIntegrationTest extends AbstractIntegrationSpec {
             configurations {
                 hash {
                     extendsFrom(configurations.compile)
-                    format = 'md5'
+                    artifactsQuery {
+                        attribute(Attribute.of(ArtifactExtension.class), new ArtifactExtension("md5"));
+                    }
                     resolutionStrategy.registerTransform(TransformWithIllegalArgumentException) { }
                 }
             }
@@ -189,11 +207,14 @@ class ArtifactTransformIntegrationTest extends AbstractIntegrationSpec {
                 into "\${buildDir}/libs"
             }
 
-            @TransformInput(format = 'jar')
             class TransformWithIllegalArgumentException extends ArtifactTransform {
 
-                @TransformOutput(format = 'md5')
-                File getOutput() {
+                TransformWithIllegalArgumentException() {
+                    getInAttributes().attribute(Attribute.of(ArtifactExtension.class), new ArtifactExtension("jar"))
+                    addOutAttributes().attribute(Attribute.of(ArtifactExtension.class), new ArtifactExtension("md5"))
+                }
+
+                File getResult(AttributeContainer out) {
                     return null
                 }
 
@@ -207,7 +228,7 @@ class ArtifactTransformIntegrationTest extends AbstractIntegrationSpec {
         fails "resolve"
 
         then:
-        failure.assertHasCause("Error while transforming 'guava-19.0.jar' to format 'md5' using 'TransformWithIllegalArgumentException'")
+        failure.assertHasCause("Error while transforming 'guava-19.0.jar' to format '' using 'TransformWithIllegalArgumentException'")
         failure.assertHasCause("Transform Implementation Missing!")
     }
 
@@ -227,7 +248,9 @@ class ArtifactTransformIntegrationTest extends AbstractIntegrationSpec {
             configurations {
                 hash {
                     extendsFrom(configurations.compile)
-                    format = 'md5'
+                    artifactsQuery {
+                        attribute(Attribute.of(ArtifactExtension), new ArtifactExtension("md5"))
+                    }
                     resolutionStrategy.registerTransform(TransformWithIllegalArgumentException) { }
                 }
             }
@@ -237,11 +260,14 @@ class ArtifactTransformIntegrationTest extends AbstractIntegrationSpec {
                 into "\${buildDir}/libs"
             }
 
-            @TransformInput(format = 'jar')
             class TransformWithIllegalArgumentException extends ArtifactTransform {
 
-                @TransformOutput(format = 'md5')
-                File getOutput() {
+                TransformWithIllegalArgumentException() {
+                    getInAttributes().attribute(Attribute.of(ArtifactExtension), new ArtifactExtension("jar"))
+                    addOutAttributes().attribute(Attribute.of(ArtifactExtension), new ArtifactExtension("md5"))
+                }
+
+                File getResult(AttributeContainer out) {
                     throw new IllegalArgumentException("getOutput() Implementation Missing!")
                 }
 
@@ -253,7 +279,7 @@ class ArtifactTransformIntegrationTest extends AbstractIntegrationSpec {
         fails "resolve"
 
         then:
-        failure.assertHasCause("Error while transforming 'guava-19.0.jar' to format 'md5' using 'TransformWithIllegalArgumentException'")
+        failure.assertHasCause("Error while transforming 'guava-19.0.jar' to format '' using 'TransformWithIllegalArgumentException'")
         failure.assertHasCause("getOutput() Implementation Missing!")
     }
 
@@ -273,7 +299,9 @@ class ArtifactTransformIntegrationTest extends AbstractIntegrationSpec {
             configurations {
                 hash {
                     extendsFrom(configurations.compile)
-                    format = 'md5'
+                    artifactsQuery {
+                        attribute(Attribute.of(ArtifactExtension), new ArtifactExtension("md5"))
+                    }
                     resolutionStrategy.registerTransform(ToNullTransform) { }
                 }
             }
@@ -283,11 +311,14 @@ class ArtifactTransformIntegrationTest extends AbstractIntegrationSpec {
                 into "\${buildDir}/libs"
             }
 
-            @TransformInput(format = 'jar')
             class ToNullTransform extends ArtifactTransform {
 
-                @TransformOutput(format = 'md5')
-                File getOutput() {
+                ToNullTransform() {
+                    getInAttributes().attribute(Attribute.of(ArtifactExtension), new ArtifactExtension("jar"))
+                    addOutAttributes().attribute(Attribute.of(ArtifactExtension), new ArtifactExtension("md5"))
+                }
+
+                File getResult(AttributeContainer out) {
                     return null
                 }
 
@@ -299,7 +330,7 @@ class ArtifactTransformIntegrationTest extends AbstractIntegrationSpec {
         fails "resolve"
 
         then:
-        failure.assertHasCause("Error while transforming 'guava-19.0.jar' to format 'md5' using 'ToNullTransform'")
+        failure.assertHasCause("Error while transforming 'guava-19.0.jar' to format '' using 'ToNullTransform'")
         failure.assertHasCause("No output file created")
     }
 
@@ -319,7 +350,9 @@ class ArtifactTransformIntegrationTest extends AbstractIntegrationSpec {
             configurations {
                 hash {
                     extendsFrom(configurations.compile)
-                    format = 'md5'
+                    artifactsQuery {
+                        attribute(Attribute.of(ArtifactExtension.class), new ArtifactExtension("md5"))
+                    }
                     resolutionStrategy.registerTransform(ToNullTransform) { }
                 }
             }
@@ -329,11 +362,14 @@ class ArtifactTransformIntegrationTest extends AbstractIntegrationSpec {
                 into "\${buildDir}/libs"
             }
 
-            @TransformInput(format = 'jar')
             class ToNullTransform extends ArtifactTransform {
 
-                @TransformOutput(format = 'md5')
-                File getOutput() {
+                ToNullTransform() {
+                    getInAttributes().attribute(Attribute.of(ArtifactExtension.class), new ArtifactExtension("jar"))
+                    addOutAttributes().attribute(Attribute.of(ArtifactExtension), new ArtifactExtension("md5"))
+                }
+
+                File getResult(AttributeContainer out) {
                     return new File('this/file/does/not/exist')
                 }
 
@@ -345,7 +381,7 @@ class ArtifactTransformIntegrationTest extends AbstractIntegrationSpec {
         fails "resolve"
 
         then:
-        failure.assertHasCause("Error while transforming 'guava-19.0.jar' to format 'md5' using 'ToNullTransform'")
+        failure.assertHasCause("Error while transforming 'guava-19.0.jar' to format '' using 'ToNullTransform'")
         failure.assertHasCause("Expected output file 'this/file/does/not/exist' was not created")
     }
 
@@ -363,7 +399,9 @@ class ArtifactTransformIntegrationTest extends AbstractIntegrationSpec {
         configurations {
             hash {
                 extendsFrom(configurations.compile)
-                format = 'md5'
+                artifactsQuery {
+                    attribute(Attribute.of(ArtifactExtension.class), new ArtifactExtension("md5"));
+                }
                 resolutionStrategy.registerTransform(FileHasher) {
                     outputDirectory = project.file("\${buildDir}/transformed")
                 }
@@ -375,12 +413,16 @@ class ArtifactTransformIntegrationTest extends AbstractIntegrationSpec {
             into "\${buildDir}/libs"
         }
 
-        @TransformInput(format = 'jar')
         class FileHasher extends ArtifactTransform {
             private File output
 
-            @TransformOutput(format = 'md5')
-            File getOutput() {
+            FileHasher() {
+                getInAttributes().attribute(Attribute.of(ArtifactExtension.class), new ArtifactExtension("jar"));
+
+                addOutAttributes().attribute(Attribute.of(ArtifactExtension.class), new ArtifactExtension("md5"));
+            }
+
+            File getResult(AttributeContainer out) {
                 return output
             }
 
