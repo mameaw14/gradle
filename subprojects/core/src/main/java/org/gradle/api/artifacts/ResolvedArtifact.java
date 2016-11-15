@@ -15,6 +15,7 @@
  */
 package org.gradle.api.artifacts;
 
+import org.gradle.api.AttributeContainer;
 import org.gradle.api.Incubating;
 import org.gradle.api.artifacts.component.ComponentArtifactIdentifier;
 
@@ -40,6 +41,9 @@ public interface ResolvedArtifact {
     String getExtension();
 
     String getClassifier();
+
+    @Incubating
+    AttributeContainer getAttributes();
 
     @Incubating
     ComponentArtifactIdentifier getId();

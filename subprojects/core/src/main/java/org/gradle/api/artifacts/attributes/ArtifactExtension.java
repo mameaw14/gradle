@@ -14,18 +14,14 @@
  * limitations under the License.
  */
 
-package org.gradle.api.artifacts.transform;
+package org.gradle.api.artifacts.attributes;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.gradle.api.Incubating;
 
-/**
- * Declares the input type for an artifact transform.
- */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
-public @interface TransformInput {
-    String format();
+@Incubating
+public class ArtifactExtension extends ArtifactDefaultAttribute {
+
+    public ArtifactExtension(String value) {
+        super(value);
+    }
 }

@@ -25,7 +25,7 @@ import java.util.Date;
 /**
  * <p>A {@code PublishArtifact} is an artifact produced by a project.</p>
  */
-public interface PublishArtifact extends Buildable {
+public interface PublishArtifact extends Buildable, Attributable<PublishArtifact> {
     /**
      * Returns the name of the artifact.
      *

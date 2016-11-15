@@ -16,7 +16,6 @@
 package org.gradle.api.internal.artifacts.ivyservice;
 
 import com.google.common.collect.Sets;
-import com.google.common.io.Files;
 import org.gradle.api.Nullable;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
@@ -344,7 +343,7 @@ public class DefaultLenientConfiguration implements LenientConfiguration, Artifa
                 if (seenArtifacts.add(artifact.getId())) {
                     // Trigger download of file, if required
                     File file = artifact.getFile();
-                    this.artifacts.add(new DefaultResolvedArtifactResult(artifact.getId(), Artifact.class, artifact.getType(), file));
+                    this.artifacts.add(new DefaultResolvedArtifactResult(artifact.getId(), Artifact.class, file));
                 }
             } catch (Throwable t) {
                 failures.add(t);
@@ -367,7 +366,7 @@ public class DefaultLenientConfiguration implements LenientConfiguration, Artifa
                         } else {
                             artifactIdentifier = new ComponentFileArtifactIdentifier(componentIdentifier, file.getName());
                         }
-                        artifacts.add(new DefaultResolvedArtifactResult(artifactIdentifier, Artifact.class, Files.getFileExtension(file.getName()), file));
+                        artifacts.add(new DefaultResolvedArtifactResult(artifactIdentifier, Artifact.class, file));
                     }
                 }
             } catch (Throwable t) {

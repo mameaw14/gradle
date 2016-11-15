@@ -15,11 +15,15 @@
  */
 package org.gradle.api.internal.artifacts.publish;
 
+import org.gradle.api.Attribute;
 import org.gradle.api.AttributeContainer;
 import org.gradle.api.artifacts.PublishArtifact;
 import org.gradle.api.internal.DefaultAttributeContainer;
 import org.gradle.api.internal.tasks.DefaultTaskDependency;
 import org.gradle.api.tasks.TaskDependency;
+import org.gradle.internal.Cast;
+
+import java.util.Map;
 
 public abstract class AbstractPublishArtifact implements PublishArtifact {
     private final DefaultTaskDependency taskDependency;
@@ -41,8 +45,52 @@ public abstract class AbstractPublishArtifact implements PublishArtifact {
     }
 
     @Override
+    public PublishArtifact attribute(String key, String value) {
+        attribute(stringAttribute(key), value);
+        return this;
+    }
+
+    @Override
+    public <T> PublishArtifact attribute(Attribute<T> key, T value) {
+        attributes.attribute(key, value);
+        return this;
+    }
+
+    @Override
     public AttributeContainer getAttributes() {
         return attributes;
+    }
+
+    @Override
+    public <T> T getAttribute(Attribute<T> key) {
+        return attributes.getAttribute(key);
+    }
+
+    @Override
+    public PublishArtifact attributes(Map<?, ?> attributes) {
+        for (Map.Entry<?, ?> entry : attributes.entrySet()) {
+            Object rawKey = entry.getKey();
+            Attribute<Object> key = Cast.uncheckedCast(asAttribute(rawKey));
+            Object value = entry.getValue();
+            this.attributes.attribute(key, value);
+        }
+        return this;
+    }
+
+    private static Attribute<?> asAttribute(Object rawKey) {
+        if (rawKey instanceof Attribute) {
+            return (Attribute<?>) rawKey;
+        }
+        return stringAttribute(rawKey.toString());
+    }
+
+    @Override
+    public boolean hasAttributes() {
+        return !attributes.isEmpty();
+    }
+
+    private static Attribute<String> stringAttribute(String name) {
+        return Attribute.of(name, String.class);
     }
 
     @Override

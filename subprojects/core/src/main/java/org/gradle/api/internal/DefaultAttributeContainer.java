@@ -89,6 +89,7 @@ public class DefaultAttributeContainer implements AttributeContainerInternal {
         return attributes != null && attributes.containsKey(key);
     }
 
+    @Override
     public AttributeContainer asImmutable() {
         if (attributes == null) {
             return EMPTY;

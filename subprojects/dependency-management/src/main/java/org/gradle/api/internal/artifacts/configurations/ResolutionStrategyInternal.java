@@ -16,10 +16,12 @@
 package org.gradle.api.internal.artifacts.configurations;
 
 import org.gradle.api.Action;
+import org.gradle.api.AttributeContainer;
 import org.gradle.api.Transformer;
 import org.gradle.api.artifacts.DependencySubstitution;
 import org.gradle.api.artifacts.ResolutionStrategy;
 import org.gradle.api.artifacts.cache.ResolutionRules;
+import org.gradle.api.artifacts.result.ResolvedArtifactResult;
 import org.gradle.api.internal.artifacts.ComponentSelectionRulesInternal;
 import org.gradle.api.internal.artifacts.configurations.dynamicversion.CachePolicy;
 import org.gradle.api.internal.artifacts.ivyservice.dependencysubstitution.DependencySubstitutionsInternal;
@@ -86,5 +88,5 @@ public interface ResolutionStrategyInternal extends ResolutionStrategy {
      * @param to format to transform to
      * @return a transform that can transform between the two formats, null if no fitting transform is registered
      */
-    Transformer<File, File> getTransform(String from, String to);
+    Transformer<File, File> getTransform(AttributeContainer from, AttributeContainer to);
 }

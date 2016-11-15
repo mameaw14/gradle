@@ -17,6 +17,7 @@
 package org.gradle.api.internal.artifacts.ivyservice.resolutionstrategy;
 
 import org.gradle.api.Action;
+import org.gradle.api.AttributeContainer;
 import org.gradle.api.Transformer;
 import org.gradle.api.artifacts.ComponentSelection;
 import org.gradle.api.artifacts.ComponentSelectionRules;
@@ -88,7 +89,7 @@ public class DefaultResolutionStrategy implements ResolutionStrategyInternal {
     }
 
     @Override
-    public Transformer<File, File> getTransform(String from, String to) {
+    public Transformer<File, File> getTransform(AttributeContainer from, AttributeContainer to) {
         return transforms.getTransform(from, to);
     }
 

@@ -17,8 +17,15 @@
 package org.gradle.internal.component.model;
 
 import com.google.common.base.Objects;
+import org.gradle.api.Attribute;
+import org.gradle.api.AttributeContainer;
 import org.gradle.api.Nullable;
 import org.gradle.api.artifacts.PublishArtifact;
+import org.gradle.api.artifacts.attributes.ArtifactClassifier;
+import org.gradle.api.artifacts.attributes.ArtifactExtension;
+import org.gradle.api.artifacts.attributes.ArtifactName;
+import org.gradle.api.artifacts.attributes.ArtifactType;
+import org.gradle.api.internal.DefaultAttributeContainer;
 import org.gradle.util.GUtil;
 
 import static com.google.common.base.Objects.equal;
@@ -28,6 +35,7 @@ public class DefaultIvyArtifactName implements IvyArtifactName {
     private final String type;
     private final String extension;
     private final String classifier;
+    private final AttributeContainer attributes;
 
     public static DefaultIvyArtifactName forPublishArtifact(PublishArtifact publishArtifact) {
         String name = publishArtifact.getName();
@@ -35,7 +43,7 @@ public class DefaultIvyArtifactName implements IvyArtifactName {
             name = publishArtifact.getFile().getName();
         }
         String classifier = GUtil.elvis(publishArtifact.getClassifier(), null);
-        return new DefaultIvyArtifactName(name, publishArtifact.getType(), publishArtifact.getExtension(), classifier);
+        return new DefaultIvyArtifactName(name, publishArtifact.getType(), publishArtifact.getExtension(), classifier, publishArtifact.getAttributes());
     }
 
     public DefaultIvyArtifactName(String name, String type, @Nullable String extension) {
@@ -43,10 +51,28 @@ public class DefaultIvyArtifactName implements IvyArtifactName {
     }
 
     public DefaultIvyArtifactName(String name, String type, @Nullable String extension, @Nullable String classifier) {
+        this(name, type, extension, classifier, null);
+    }
+
+    public DefaultIvyArtifactName(String name, String type, @Nullable String extension, @Nullable String classifier, @Nullable AttributeContainer attributes) {
         this.name = name;
         this.type = type;
         this.extension = extension;
         this.classifier = classifier;
+        this.attributes = attributes == null ? new DefaultAttributeContainer() : attributes;
+
+        attachDefaultAttributes();
+    }
+
+    private void attachDefaultAttributes() {
+        attributes.attribute(Attribute.of(ArtifactName.class), new ArtifactName(name));
+        attributes.attribute(Attribute.of(ArtifactType.class), new ArtifactType(type));
+        if (extension != null) {
+            attributes.attribute(Attribute.of(ArtifactExtension.class), new ArtifactExtension(extension));
+        }
+        if (classifier != null) {
+            attributes.attribute(Attribute.of(ArtifactClassifier.class), new ArtifactClassifier(classifier));
+        }
     }
 
     @Override
@@ -98,5 +124,9 @@ public class DefaultIvyArtifactName implements IvyArtifactName {
 
     public String getClassifier() {
         return classifier;
+    }
+
+    public AttributeContainer getAttributes() {
+        return attributes;
     }
 }

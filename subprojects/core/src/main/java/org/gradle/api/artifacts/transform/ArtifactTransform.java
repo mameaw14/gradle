@@ -16,13 +16,19 @@
 
 package org.gradle.api.artifacts.transform;
 
+import org.gradle.api.AttributeContainer;
+
 import java.io.File;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * Base class for artifact transformations.
  */
 public abstract class ArtifactTransform {
     private File outputDirectory;
+    private ArtifactTransformAttributes inAttributes = new ArtifactTransformAttributes();
+    private Set<ArtifactTransformAttributes> outAttributesSet = new LinkedHashSet<ArtifactTransformAttributes>();
 
     public File getOutputDirectory() {
         return outputDirectory;
@@ -32,5 +38,22 @@ public abstract class ArtifactTransform {
         this.outputDirectory = outputDirectory;
     }
 
-    public abstract void transform(File in);
+    public ArtifactTransformAttributes getInAttributes() {
+        return inAttributes;
+    }
+
+    public ArtifactTransformAttributes addOutAttributes() {
+        ArtifactTransformAttributes outAttributes = new ArtifactTransformAttributes();
+        outAttributesSet.add(outAttributes);
+        return outAttributes;
+    }
+
+    public Set<ArtifactTransformAttributes> getOutAttributesSet() {
+        return outAttributesSet;
+    }
+
+    public abstract void transform(File input);
+
+    public abstract File getResult(AttributeContainer out);
+
 }

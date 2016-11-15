@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,26 +14,15 @@
  * limitations under the License.
  */
 
-package org.gradle.internal.component.model;
+package org.gradle.api.artifacts.attributes;
 
-import org.gradle.api.AttributeContainer;
 import org.gradle.api.Incubating;
-import org.gradle.api.Nullable;
 
-/**
- * Represents the 'name' part of an Ivy artifact, independent of which module version the artifact might belong to.
- */
-public interface IvyArtifactName {
-    String getName();
+@Incubating
+public class ArtifactType extends ArtifactDefaultAttribute {
 
-    String getType();
-
-    @Nullable
-    String getExtension();
-
-    @Nullable
-    String getClassifier();
-
-    @Incubating
-    AttributeContainer getAttributes();
+    public ArtifactType(String value) {
+        super(value);
+    }
 }
+

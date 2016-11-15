@@ -39,6 +39,7 @@ import org.gradle.api.artifacts.ResolvedConfiguration;
 import org.gradle.api.artifacts.component.ComponentIdentifier;
 import org.gradle.api.artifacts.result.ResolutionResult;
 import org.gradle.api.artifacts.result.ResolvedArtifactResult;
+import org.gradle.api.artifacts.transform.ArtifactTransformAttributes;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.internal.ClosureBackedAction;
 import org.gradle.api.internal.CompositeDomainObjectSet;
@@ -140,6 +141,7 @@ public class DefaultConfiguration extends AbstractFileCollection implements Conf
     private boolean canBeConsumed = true;
     private boolean canBeResolved = true;
     private final DefaultAttributeContainer configurationAttributes = new DefaultAttributeContainer();
+    private final ArtifactTransformAttributes artifactAttributes = new ArtifactTransformAttributes();
 
     public DefaultConfiguration(String path, String name, ConfigurationsProvider configurationsProvider,
                                 ConfigurationResolver resolver, ListenerManager listenerManager,
@@ -269,17 +271,6 @@ public class DefaultConfiguration extends AbstractFileCollection implements Conf
     public Configuration setTransitive(boolean transitive) {
         validateMutation(MutationType.DEPENDENCIES);
         this.transitive = transitive;
-        return this;
-    }
-
-    @Override
-    public String getFormat() {
-        return format;
-    }
-
-    @Override
-    public Configuration setFormat(String format) {
-        this.format = format;
         return this;
     }
 
@@ -836,6 +827,18 @@ public class DefaultConfiguration extends AbstractFileCollection implements Conf
     public void setCanBeResolved(boolean allowed) {
         validateMutation(MutationType.ROLE);
         canBeResolved = allowed;
+    }
+
+
+    @Override
+    public Configuration artifactsQuery(Action<? super ArtifactTransformAttributes> action) {
+        action.execute(artifactAttributes);
+        return this;
+    }
+
+    @Override
+    public AttributeContainer getArtifactAttributes() {
+        return artifactAttributes.getAttributes();
     }
 
     /**
