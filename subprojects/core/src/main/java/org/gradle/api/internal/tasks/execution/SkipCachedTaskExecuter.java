@@ -140,11 +140,11 @@ public class SkipCachedTaskExecuter implements TaskExecuter {
             if (taskCaching.isPushAllowed()) {
                 if (state.getFailure() == null) {
                     TaskArtifactState taskState = repository.getStateFor(task);
+                    TaskCacheKey cacheKeyAfterExecution = taskState.calculateCacheKey();
+                    if (cacheKeyAfterExecution == null || !cacheKey.getHashCode().equals(cacheKeyAfterExecution.getHashCode())) {
+                        throw new GradleException("Cache key changed during execution! Check if you have a `doFirst` action changing inputs");
+                    }
                     try {
-                        TaskCacheKey cacheKeyAfterExecution = taskState.calculateCacheKey();
-                        if (cacheKeyAfterExecution == null || !cacheKey.getHashCode().equals(cacheKeyAfterExecution.getHashCode())) {
-                            throw new GradleException("Cache key changed during execution! Check if you have a `doFirst` action changing inputs");
-                        }
                         getCache().store(cacheKey, new TaskOutputWriter() {
                             @Override
                             public void writeTo(OutputStream output) throws IOException {

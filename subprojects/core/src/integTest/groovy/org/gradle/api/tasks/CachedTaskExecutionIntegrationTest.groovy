@@ -403,4 +403,21 @@ class CachedTaskExecutionIntegrationTest extends AbstractIntegrationSpec impleme
         then:
         skippedTasks.containsAll ":compileJava", ":jar"
     }
+
+    def "modifying inputs during execution fails the build"() {
+        given:
+        buildFile << """
+            compileJava {
+                sourceCompatibility = 1.6
+                doFirst {
+                    sourceCompatibility = 1.7
+                }
+            }
+        """.stripIndent()
+
+        expect:
+        withTaskCache().fails 'compileJava'
+
+        failure.assertHasDescription('Cache key changed during execution!')
+    }
 }

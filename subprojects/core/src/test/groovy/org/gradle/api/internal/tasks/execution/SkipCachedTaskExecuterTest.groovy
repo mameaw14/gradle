@@ -22,6 +22,7 @@ import org.gradle.api.Project
 import org.gradle.api.internal.TaskInternal
 import org.gradle.api.internal.TaskOutputsInternal
 import org.gradle.api.internal.changedetection.TaskArtifactState
+import org.gradle.api.internal.changedetection.TaskArtifactStateRepository
 import org.gradle.api.internal.tasks.TaskExecuter
 import org.gradle.api.internal.tasks.TaskExecutionContext
 import org.gradle.api.internal.tasks.TaskExecutionOutcome
@@ -33,7 +34,7 @@ import org.gradle.api.internal.tasks.cache.TaskOutputPacker
 import org.gradle.api.internal.tasks.cache.config.TaskCachingInternal
 import spock.lang.Specification
 
-public class SkipCachedTaskExecuterTest extends Specification {
+class SkipCachedTaskExecuterTest extends Specification {
     def delegate = Mock(TaskExecuter)
     def task = Mock(TaskInternal)
     def project = Mock(Project)
@@ -48,7 +49,9 @@ public class SkipCachedTaskExecuterTest extends Specification {
     def taskOutputPacker = Mock(TaskOutputPacker)
     def startParameter = Mock(StartParameter)
     def cacheKey = Mock(TaskCacheKey)
+    def hashCode = "9235ed3fe16325fd9752a4a69487954b"
     def internalTaskExecutionListener = Mock(TaskOutputsGenerationListener)
+    def repository = Mock(TaskArtifactStateRepository)
 
     def executer = new SkipCachedTaskExecuter(taskCaching, taskOutputPacker, startParameter, internalTaskExecutionListener, repository, delegate)
 
@@ -109,6 +112,9 @@ public class SkipCachedTaskExecuterTest extends Specification {
         1 * delegate.execute(task, taskState, taskContext)
         1 * taskCaching.isPushAllowed() >> true
         1 * taskState.getFailure() >> null
+        1 * repository.getStateFor(task) >> taskArtifactState
+        1 * taskArtifactState.calculateCacheKey() >> cacheKey
+        2 * cacheKey.getHashCode() >> hashCode
         1 * taskState.setCacheable(true)
 
         then:
@@ -139,6 +145,9 @@ public class SkipCachedTaskExecuterTest extends Specification {
         then:
         1 * taskCaching.isPushAllowed() >> true
         1 * taskState.getFailure() >> null
+        1 * repository.getStateFor(task) >> taskArtifactState
+        1 * taskArtifactState.calculateCacheKey() >> cacheKey
+        2 * cacheKey.getHashCode() >> hashCode
 
         then:
         1 * taskCaching.getCacheFactory() >> taskOutputCacheFactory
@@ -292,6 +301,9 @@ public class SkipCachedTaskExecuterTest extends Specification {
         then:
         1 * taskState.getFailure() >> null
         1 * taskCaching.isPushAllowed() >> true
+        1 * repository.getStateFor(task) >> taskArtifactState
+        1 * taskArtifactState.calculateCacheKey() >> cacheKey
+        2 * cacheKey.getHashCode() >> hashCode
         1 * taskOutputCache.store(cacheKey, _)
         0 * _
     }
@@ -327,7 +339,57 @@ public class SkipCachedTaskExecuterTest extends Specification {
         then:
         1 * taskCaching.isPushAllowed() >> true
         1 * taskState.getFailure() >> null
+        1 * repository.getStateFor(task) >> taskArtifactState
+        1 * taskArtifactState.calculateCacheKey() >> cacheKey
+        2 * cacheKey.getHashCode() >> hashCode
         1 * taskOutputCache.store(cacheKey, _) >> { throw new RuntimeException("Bad result") }
         0 * _
+    }
+
+    def "fails when cache key changed during execution"() {
+        given:
+        def changedTaskArtifactState = Mock(TaskArtifactState)
+        def changedCacheKey = Mock(TaskCacheKey)
+        def changedHashCode = "5cbb328184e9add5c7b17d98a6c24921"
+
+        when:
+        executer.execute(task, taskState, taskContext)
+
+        then:
+        1 * task.getOutputs() >> outputs
+        1 * outputs.hasDeclaredOutputs() >> true
+        1 * outputs.isCacheAllowed() >> true
+        1 * outputs.isCacheEnabled() >> true
+
+        then:
+        1 * taskContext.getTaskArtifactState() >> taskArtifactState
+        1 * taskArtifactState.calculateCacheKey() >> cacheKey
+        1 * taskCaching.isPullAllowed() >> true
+        1 * taskArtifactState.isAllowedToUseCachedResults() >> true
+
+        then:
+        1 * taskCaching.getCacheFactory() >> taskOutputCacheFactory
+        1 * taskOutputCacheFactory.createCache(_) >> taskOutputCache
+        1 * taskOutputCache.getDescription() >> "test"
+
+        then:
+        1 * taskOutputCache.load(cacheKey, _) >> false
+
+        then:
+        1 * taskState.setCacheable(true)
+        1 * delegate.execute(task, taskState, taskContext)
+
+        then:
+        1 * taskCaching.isPushAllowed() >> true
+        1 * taskState.getFailure() >> null
+        1 * cacheKey.getHashCode() >> hashCode
+        1 * repository.getStateFor(task) >> changedTaskArtifactState
+        1 * changedTaskArtifactState.calculateCacheKey() >> changedCacheKey
+        1 * changedCacheKey.getHashCode() >> changedHashCode
+        0 * _
+
+        then:
+        Exception e = thrown()
+        e.message.contains("Cache key changed during execution!")
     }
 }

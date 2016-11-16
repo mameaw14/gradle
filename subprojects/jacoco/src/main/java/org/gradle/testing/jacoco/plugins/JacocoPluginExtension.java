@@ -31,6 +31,8 @@ import org.gradle.internal.jacoco.JacocoAgentJar;
 import org.gradle.process.JavaForkOptions;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
@@ -107,10 +109,15 @@ public class JacocoPluginExtension {
                 return extension.isEnabled();
             }
         });
-        task.getInputs().property("jacoco.jvmArgs", new Callable<String>() {
+        task.getInputs().property("jvmArgs", new Callable<Object>() {
             @Override
-            public String call() throws Exception {
-                return extension.getAsJvmArg();
+            public Object call() throws Exception {
+                List<String> jvmArgs = new ArrayList<String>(task.getJvmArgs());
+                String jvmArg = extension.getAsJvmArg();
+                if (extension.isEnabled() && !jvmArgs.contains(jvmArg)) {
+                    jvmArgs.add(jvmArg);
+                }
+                return jvmArgs;
             }
         });
         TaskInternal taskInternal = (TaskInternal) task;
