@@ -18,13 +18,13 @@ package org.gradle.api.artifacts.transform;
 
 import org.gradle.api.Attribute;
 import org.gradle.api.AttributeContainer;
-import org.gradle.api.artifacts.Attributable;
+import org.gradle.api.artifacts.HasAttributes;
 import org.gradle.api.internal.DefaultAttributeContainer;
 import org.gradle.internal.Cast;
 
 import java.util.Map;
 
-public class ArtifactTransformAttributes implements Attributable<ArtifactTransformAttributes> {
+public class ArtifactTransformAttributes implements HasAttributes<ArtifactTransformAttributes> {
     private final AttributeContainer attributes = new DefaultAttributeContainer();
 
     @Override

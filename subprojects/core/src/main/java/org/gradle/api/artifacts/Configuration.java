@@ -44,7 +44,7 @@ import static groovy.lang.Closure.DELEGATE_FIRST;
  * <p>
  */
 @HasInternalProtocol
-public interface Configuration extends FileCollection, Attributable<Configuration> {
+public interface Configuration extends FileCollection, HasAttributes<Configuration> {
 
     /**
      * Returns the resolution strategy used by this configuration.

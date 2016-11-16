@@ -26,9 +26,9 @@ import java.util.Map;
  * Domain objects that can be enriched with attributes for typing them
  * in multiple dimensions implement this interface.
  *
- * @param <ATTRIBUTED> the type that is enriched with attributes (used to provide fluent API)
+ * @param <SELF> the type that is enriched with attributes (used to provide fluent API)
  */
-public interface Attributable<ATTRIBUTED> {
+public interface HasAttributes<SELF> {
 
     /**
      * Sets a configuration attribute.
@@ -37,10 +37,10 @@ public interface Attributable<ATTRIBUTED> {
      * @return this configuration
      */
     @Incubating
-    ATTRIBUTED attribute(String key, String value);
+    SELF attribute(String key, String value);
 
     @Incubating
-    <T> ATTRIBUTED attribute(Attribute<T> key, T value);
+    <T> SELF attribute(Attribute<T> key, T value);
 
     /**
      * Sets multiple configuration attributes at once. The attributes are copied from the source map.
@@ -51,7 +51,7 @@ public interface Attributable<ATTRIBUTED> {
      * @return this configuration
      */
     @Incubating
-    ATTRIBUTED attributes(Map<?, ?> attributes);
+    SELF attributes(Map<?, ?> attributes);
 
     /**
      * Returns this configuration attributes.
