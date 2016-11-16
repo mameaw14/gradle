@@ -21,6 +21,7 @@ import org.gradle.api.GradleException;
 import org.gradle.api.internal.TaskInternal;
 import org.gradle.api.internal.TaskOutputsInternal;
 import org.gradle.api.internal.changedetection.TaskArtifactState;
+import org.gradle.api.internal.changedetection.TaskArtifactStateRepository;
 import org.gradle.api.internal.tasks.TaskExecuter;
 import org.gradle.api.internal.tasks.TaskExecutionContext;
 import org.gradle.api.internal.tasks.TaskExecutionOutcome;
@@ -47,15 +48,17 @@ public class SkipCachedTaskExecuter implements TaskExecuter {
     private final TaskCachingInternal taskCaching;
     private final StartParameter startParameter;
     private final TaskOutputPacker packer;
+    private TaskArtifactStateRepository repository;
     private final TaskExecuter delegate;
     private final TaskOutputsGenerationListener taskOutputsGenerationListener;
     private TaskOutputCache cache;
 
-    public SkipCachedTaskExecuter(TaskCachingInternal taskCaching, TaskOutputPacker packer, StartParameter startParameter, TaskOutputsGenerationListener taskOutputsGenerationListener, TaskExecuter delegate) {
+    public SkipCachedTaskExecuter(TaskCachingInternal taskCaching, TaskOutputPacker packer, StartParameter startParameter, TaskOutputsGenerationListener taskOutputsGenerationListener, TaskArtifactStateRepository repository, TaskExecuter delegate) {
         this.taskCaching = taskCaching;
         this.startParameter = startParameter;
         this.packer = packer;
         this.taskOutputsGenerationListener = taskOutputsGenerationListener;
+        this.repository = repository;
         this.delegate = delegate;
         SingleMessageLogger.incubatingFeatureUsed("Task output caching");
     }
@@ -136,7 +139,12 @@ public class SkipCachedTaskExecuter implements TaskExecuter {
         if (cacheKey != null) {
             if (taskCaching.isPushAllowed()) {
                 if (state.getFailure() == null) {
+                    TaskArtifactState taskState = repository.getStateFor(task);
                     try {
+                        TaskCacheKey cacheKeyAfterExecution = taskState.calculateCacheKey();
+                        if (cacheKeyAfterExecution == null || !cacheKey.getHashCode().equals(cacheKeyAfterExecution.getHashCode())) {
+                            throw new GradleException("Cache key changed during execution! Check if you have a `doFirst` action changing inputs");
+                        }
                         getCache().store(cacheKey, new TaskOutputWriter() {
                             @Override
                             public void writeTo(OutputStream output) throws IOException {

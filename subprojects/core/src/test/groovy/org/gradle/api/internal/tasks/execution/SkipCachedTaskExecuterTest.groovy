@@ -50,7 +50,7 @@ public class SkipCachedTaskExecuterTest extends Specification {
     def cacheKey = Mock(TaskCacheKey)
     def internalTaskExecutionListener = Mock(TaskOutputsGenerationListener)
 
-    def executer = new SkipCachedTaskExecuter(taskCaching, taskOutputPacker, startParameter, internalTaskExecutionListener, delegate)
+    def executer = new SkipCachedTaskExecuter(taskCaching, taskOutputPacker, startParameter, internalTaskExecutionListener, repository, delegate)
 
     def "skip task when cached results exist"() {
         when:

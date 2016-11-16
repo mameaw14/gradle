@@ -108,6 +108,7 @@ public class TaskExecutionServices {
                                             gradle.getTaskCaching(),
                                             packer,
                                             taskOutputsGenerationListener,
+                                            repository,
                                             new ExecuteActionsTaskExecuter(
                                                 taskOutputsGenerationListener,
                                                 listenerManager.getBroadcaster(TaskActionListener.class)
@@ -123,9 +124,9 @@ public class TaskExecutionServices {
         );
     }
 
-    private static TaskExecuter createSkipCachedExecuterIfNecessary(StartParameter startParameter, TaskCachingInternal taskCaching, TaskOutputPacker packer, TaskOutputsGenerationListener taskOutputsGenerationListener, TaskExecuter delegate) {
+    private static TaskExecuter createSkipCachedExecuterIfNecessary(StartParameter startParameter, TaskCachingInternal taskCaching, TaskOutputPacker packer, TaskOutputsGenerationListener taskOutputsGenerationListener, TaskArtifactStateRepository repository, TaskExecuter delegate) {
         if (startParameter.isTaskOutputCacheEnabled()) {
-            return new SkipCachedTaskExecuter(taskCaching, packer, startParameter, taskOutputsGenerationListener, delegate);
+            return new SkipCachedTaskExecuter(taskCaching, packer, startParameter, taskOutputsGenerationListener, repository, delegate);
         } else {
             return delegate;
         }
