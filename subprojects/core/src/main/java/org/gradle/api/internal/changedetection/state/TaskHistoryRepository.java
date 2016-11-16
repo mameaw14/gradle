@@ -18,6 +18,8 @@ package org.gradle.api.internal.changedetection.state;
 import org.gradle.api.internal.TaskInternal;
 
 public interface TaskHistoryRepository {
+    TaskExecution getCurrentExecution(TaskInternal task);
+
     History getHistory(TaskInternal task);
 
     interface History {

@@ -22,6 +22,7 @@ import org.gradle.api.internal.TaskInternal;
 import org.gradle.api.internal.TaskOutputsInternal;
 import org.gradle.api.internal.changedetection.TaskArtifactState;
 import org.gradle.api.internal.changedetection.TaskArtifactStateRepository;
+import org.gradle.api.internal.changedetection.state.TaskExecution;
 import org.gradle.api.internal.tasks.TaskExecuter;
 import org.gradle.api.internal.tasks.TaskExecutionContext;
 import org.gradle.api.internal.tasks.TaskExecutionOutcome;
@@ -139,8 +140,9 @@ public class SkipCachedTaskExecuter implements TaskExecuter {
         if (cacheKey != null) {
             if (taskCaching.isPushAllowed()) {
                 if (state.getFailure() == null) {
-                    TaskArtifactState taskState = repository.getStateFor(task);
-                    TaskCacheKey cacheKeyAfterExecution = taskState.calculateCacheKey();
+                    TaskArtifactState taskArtifactState = repository.getStateFor(task);
+                    TaskExecution taskExecution = taskArtifactState.currentExecution(task);
+                    TaskCacheKey cacheKeyAfterExecution = taskExecution == null ? taskArtifactState.calculateCacheKey() : taskExecution.calculateCacheKey();
                     if (cacheKeyAfterExecution == null || !cacheKey.getHashCode().equals(cacheKeyAfterExecution.getHashCode())) {
                         throw new GradleException("Cache key changed during execution! Check if you have a `doFirst` action changing inputs");
                     }

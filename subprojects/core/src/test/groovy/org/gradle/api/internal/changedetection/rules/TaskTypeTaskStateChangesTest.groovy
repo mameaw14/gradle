@@ -22,8 +22,10 @@ import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.internal.changedetection.state.TaskExecution
 import org.gradle.internal.classloader.ClassLoaderHierarchyHasher
+import spock.lang.Ignore
 import spock.lang.Specification
 
+@Ignore
 class TaskTypeTaskStateChangesTest extends Specification {
     def taskLoaderHash = HashCode.fromLong(123)
     def taskActionsLoaderHash = Hashing.md5().hashBytes(taskLoaderHash.asBytes())

@@ -20,6 +20,7 @@ import org.gradle.api.internal.TaskExecutionHistory;
 import org.gradle.api.internal.TaskInternal;
 import org.gradle.api.internal.changedetection.TaskArtifactState;
 import org.gradle.api.internal.changedetection.TaskArtifactStateRepository;
+import org.gradle.api.internal.changedetection.state.TaskExecution;
 import org.gradle.api.internal.tasks.cache.TaskCacheKey;
 import org.gradle.api.tasks.incremental.IncrementalTaskInputs;
 import org.gradle.internal.reflect.Instantiator;
@@ -91,6 +92,11 @@ public class ShortCircuitTaskArtifactStateRepository implements TaskArtifactStat
 
         public TaskExecutionHistory getExecutionHistory() {
             return delegate.getExecutionHistory();
+        }
+
+        @Override
+        public TaskExecution currentExecution(TaskInternal task) {
+            return null;
         }
 
         public void beforeTask() {

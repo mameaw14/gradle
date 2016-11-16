@@ -16,6 +16,8 @@
 package org.gradle.api.internal.changedetection;
 
 import org.gradle.api.internal.TaskExecutionHistory;
+import org.gradle.api.internal.TaskInternal;
+import org.gradle.api.internal.changedetection.state.TaskExecution;
 import org.gradle.api.internal.tasks.cache.TaskCacheKey;
 import org.gradle.api.tasks.incremental.IncrementalTaskInputs;
 
@@ -63,4 +65,6 @@ public interface TaskArtifactState {
      * Returns the history for this task.
      */
     TaskExecutionHistory getExecutionHistory();
+
+    TaskExecution currentExecution(TaskInternal task);
 }

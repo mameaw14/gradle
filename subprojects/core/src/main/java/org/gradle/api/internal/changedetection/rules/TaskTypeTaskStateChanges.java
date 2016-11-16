@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 import java.util.List;
 
-class TaskTypeTaskStateChanges extends SimpleTaskStateChanges {
+public class TaskTypeTaskStateChanges extends SimpleTaskStateChanges {
     private static final Logger LOGGER = LoggerFactory.getLogger(TaskTypeTaskStateChanges.class);
     private static final HashCode NO_ACTION_LOADERS = Hashing.md5().hashString("no-action-loaders", Charsets.UTF_8);
     private final String taskPath;
@@ -40,21 +40,22 @@ class TaskTypeTaskStateChanges extends SimpleTaskStateChanges {
     private final TaskExecution previousExecution;
 
     public TaskTypeTaskStateChanges(TaskExecution previousExecution, TaskExecution currentExecution, String taskPath, Class<? extends TaskInternal> taskClass, Collection<ClassLoader> taskActionClassLoaders, ClassLoaderHierarchyHasher classLoaderHierarchyHasher) {
-        String taskClassName = taskClass.getName();
-        currentExecution.setTaskClass(taskClassName);
-        HashCode taskClassLoaderHash = classLoaderHierarchyHasher.getStrictHash(taskClass.getClassLoader());
-        currentExecution.setTaskClassLoaderHash(taskClassLoaderHash);
-        HashCode taskActionsClassLoaderHash = calculateActionClassLoaderHash(taskActionClassLoaders, classLoaderHierarchyHasher);
-        currentExecution.setTaskActionsClassLoaderHash(taskActionsClassLoaderHash);
+        initExecution(currentExecution, taskClass, taskActionClassLoaders, classLoaderHierarchyHasher);
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Task {} class loader hash: {}", taskPath, taskClassLoaderHash);
-            LOGGER.info("Task {} actions class loader hash: {}", taskPath, taskActionsClassLoaderHash);
+            LOGGER.info("Task {} class loader hash: {}", taskPath, currentExecution.getTaskClassLoaderHash());
+            LOGGER.info("Task {} actions class loader hash: {}", taskPath, currentExecution.getTaskActionsClassLoaderHash());
         }
         this.taskPath = taskPath;
-        this.taskClass = taskClassName;
-        this.taskClassLoaderHash = taskClassLoaderHash;
-        this.taskActionsClassLoaderHash = taskActionsClassLoaderHash;
+        this.taskClass = currentExecution.getTaskClass();
+        this.taskClassLoaderHash = currentExecution.getTaskClassLoaderHash();
+        this.taskActionsClassLoaderHash = currentExecution.getTaskActionsClassLoaderHash();
         this.previousExecution = previousExecution;
+    }
+
+    public static void initExecution(TaskExecution currentExecution, Class<? extends TaskInternal> taskClass, Collection<ClassLoader> taskActionClassLoaders, ClassLoaderHierarchyHasher classLoaderHierarchyHasher) {
+        currentExecution.setTaskClass(taskClass.getName());
+        currentExecution.setTaskClassLoaderHash(classLoaderHierarchyHasher.getStrictHash(taskClass.getClassLoader()));
+        currentExecution.setTaskActionsClassLoaderHash(calculateActionClassLoaderHash(taskActionClassLoaders, classLoaderHierarchyHasher));
     }
 
     private static HashCode calculateActionClassLoaderHash(Collection<ClassLoader> taskActionClassLoaders, ClassLoaderHierarchyHasher classLoaderHierarchyHasher) {

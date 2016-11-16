@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 
-abstract class AbstractNamedFileSnapshotTaskStateChanges implements TaskStateChanges {
+public abstract class AbstractNamedFileSnapshotTaskStateChanges implements TaskStateChanges {
     private Map<String, FileCollectionSnapshot> fileSnapshotsBeforeExecution;
     private final String taskName;
     private final String title;
@@ -78,7 +78,7 @@ abstract class AbstractNamedFileSnapshotTaskStateChanges implements TaskStateCha
         return fileSnapshotsBeforeExecution;
     }
 
-    protected static Map<String, FileCollectionSnapshot> buildSnapshots(String taskName, FileCollectionSnapshotterRegistry snapshotterRegistry, String title, SortedSet<? extends TaskFilePropertySpec> fileProperties) {
+    public static Map<String, FileCollectionSnapshot> buildSnapshots(String taskName, FileCollectionSnapshotterRegistry snapshotterRegistry, String title, SortedSet<? extends TaskFilePropertySpec> fileProperties) {
         ImmutableMap.Builder<String, FileCollectionSnapshot> builder = ImmutableMap.builder();
         for (TaskFilePropertySpec propertySpec : fileProperties) {
             FileCollectionSnapshot result;

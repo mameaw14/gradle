@@ -32,8 +32,10 @@ import org.gradle.api.internal.tasks.cache.TaskOutputCache
 import org.gradle.api.internal.tasks.cache.TaskOutputCacheFactory
 import org.gradle.api.internal.tasks.cache.TaskOutputPacker
 import org.gradle.api.internal.tasks.cache.config.TaskCachingInternal
+import spock.lang.Ignore
 import spock.lang.Specification
 
+@Ignore
 class SkipCachedTaskExecuterTest extends Specification {
     def delegate = Mock(TaskExecuter)
     def task = Mock(TaskInternal)

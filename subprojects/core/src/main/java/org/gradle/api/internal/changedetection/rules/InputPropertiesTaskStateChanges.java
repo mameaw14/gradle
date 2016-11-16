@@ -25,16 +25,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-class InputPropertiesTaskStateChanges extends SimpleTaskStateChanges {
+public class InputPropertiesTaskStateChanges extends SimpleTaskStateChanges {
     private final Map<String, Object> properties;
     private final TaskExecution previousExecution;
     private final TaskInternal task;
 
     public InputPropertiesTaskStateChanges(TaskExecution previousExecution, TaskExecution currentExecution, TaskInternal task) {
-        this.properties = new HashMap<String, Object>(task.getInputs().getProperties());
-        currentExecution.setInputProperties(properties);
+        initCurrentExecution(currentExecution, task);
+        this.properties = currentExecution.getInputProperties();
         this.previousExecution = previousExecution;
         this.task = task;
+    }
+
+    public static void initCurrentExecution(TaskExecution currentExecution, TaskInternal task) {
+        currentExecution.setInputProperties(new HashMap<String, Object>(task.getInputs().getProperties()));
     }
 
     @Override

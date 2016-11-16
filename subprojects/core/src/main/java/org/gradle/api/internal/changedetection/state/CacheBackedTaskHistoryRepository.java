@@ -62,6 +62,15 @@ public class CacheBackedTaskHistoryRepository implements TaskHistoryRepository {
         taskHistoryCache = cacheAccess.createCache("taskArtifacts", String.class, serializer);
     }
 
+    @Override
+    public TaskExecution getCurrentExecution(TaskInternal task) {
+        LazyTaskExecution currentExecution = new LazyTaskExecution();
+        currentExecution.snapshotRepository = snapshotRepository;
+        currentExecution.setOutputPropertyNamesForCacheKey(getOutputPropertyNamesForCacheKey(task));
+        currentExecution.setDeclaredOutputFilePaths(getDeclaredOutputFilePaths(task));
+        return currentExecution;
+    }
+
     public History getHistory(final TaskInternal task) {
         final TaskExecutionList previousExecutions = loadPreviousExecutions(task);
         final LazyTaskExecution currentExecution = new LazyTaskExecution();

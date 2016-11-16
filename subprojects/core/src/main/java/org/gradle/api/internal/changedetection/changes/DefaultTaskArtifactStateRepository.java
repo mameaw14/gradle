@@ -22,8 +22,11 @@ import org.gradle.api.internal.TaskExecutionHistory;
 import org.gradle.api.internal.TaskInternal;
 import org.gradle.api.internal.changedetection.TaskArtifactState;
 import org.gradle.api.internal.changedetection.TaskArtifactStateRepository;
+import org.gradle.api.internal.changedetection.rules.AbstractNamedFileSnapshotTaskStateChanges;
+import org.gradle.api.internal.changedetection.rules.InputPropertiesTaskStateChanges;
 import org.gradle.api.internal.changedetection.rules.TaskStateChange;
 import org.gradle.api.internal.changedetection.rules.TaskStateChanges;
+import org.gradle.api.internal.changedetection.rules.TaskTypeTaskStateChanges;
 import org.gradle.api.internal.changedetection.rules.TaskUpToDateState;
 import org.gradle.api.internal.changedetection.state.FileCollectionSnapshot;
 import org.gradle.api.internal.changedetection.state.FileCollectionSnapshotterRegistry;
@@ -156,6 +159,16 @@ public class DefaultTaskArtifactStateRepository implements TaskArtifactStateRepo
         }
 
         public void finished() {
+        }
+
+        @Override
+        public TaskExecution currentExecution(TaskInternal task) {
+            TaskExecution currentExecution = taskHistoryRepository.getCurrentExecution(task);
+            TaskTypeTaskStateChanges.initExecution(currentExecution, task.getClass(), task.getActionClassLoaders(), classLoaderHierarchyHasher);
+            InputPropertiesTaskStateChanges.initCurrentExecution(currentExecution, task);
+            currentExecution.setInputFilesSnapshot(AbstractNamedFileSnapshotTaskStateChanges.buildSnapshots(task.getName(), fileCollectionSnapshotterRegistry, "Input",
+                task.getInputs().getFileProperties()));
+            return currentExecution;
         }
 
         private TaskUpToDateState getStates() {
